@@ -63,6 +63,15 @@ const DuelDetail = () => {
     enabled: Boolean(duel?.proof_id)
   });
   
+  useEffect(() => {
+    if (duel && username) {
+      const userAlreadySubmitted = 
+        (username === duel.creator_name && duel.creator_progress !== null && duel.creator_progress >= 0) ||
+        (username === duel.opponent_name && duel.opponent_progress !== null && duel.opponent_progress >= 0);
+      setSubmitted(userAlreadySubmitted);
+    }
+  }, [duel, username]);
+  
   const submitMutation = useMutation({
     mutationFn: async ({ content, duelId, userName }: { content: string; duelId: string; userName: string }) => {
       if (!proof) throw new Error("Proof not found");
@@ -452,7 +461,7 @@ const DuelDetail = () => {
       )}
       
       {isParticipant && duel.status === "active" && (
-        submitted || hasSubmitted ? (
+        submitted ? (
           <Card className="math-card p-6">
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-bold">Solution Submitted</h2>
