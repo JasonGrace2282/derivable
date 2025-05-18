@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MathEditor } from "@/components/MathEditor";
@@ -34,7 +33,6 @@ const DailyDerive = () => {
   };
 
   const handleSubmit = (solution: string) => {
-    // In a real app, we would send this to a backend for evaluation
     const calculatedProgress = Math.min(Math.floor(solution.length / 10), 100);
     setProgress(calculatedProgress);
     setSubmitted(true);
@@ -58,13 +56,11 @@ const DailyDerive = () => {
     
     setHintsUsed(prev => prev + 1);
     
-    // Always use Gemini API for hints
     const hint = await getHint(
       dailyProblem.referenceSolution,
       solution
     );
     
-    // Store the hint in state
     setCurrentHint(hint);
     return hint;
   };
@@ -150,14 +146,6 @@ const DailyDerive = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {currentHint && (
-            <HintDisplay 
-              hint={currentHint} 
-              hintsUsed={hintsUsed} 
-              maxHints={3} 
-            />
-          )}
-          
           <MathEditor
             initialPrompt={dailyProblem.prompt}
             onSubmit={handleSubmit}

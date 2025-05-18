@@ -24,7 +24,7 @@ import { HintDisplay } from "./HintDisplay";
 type MathEditorProps = {
   initialPrompt: string;
   onSubmit: (solution: string) => void;
-  onGetHint?: () => Promise<string>;
+  onGetHint?: (currentSolution: string) => Promise<string>;
   hintsUsed?: number;
   maxHints?: number;
   isLoading?: boolean;
@@ -97,7 +97,7 @@ export function MathEditor({
     
     try {
       setHintLoading(true);
-      const hintText = await onGetHint();
+      const hintText = await onGetHint(solution);
       setHint(hintText);
     } catch (error) {
       console.error("Error getting hint:", error);

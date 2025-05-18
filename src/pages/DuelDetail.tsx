@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Loader, ArrowLeft, Trophy, Users, Clock, Sword } from "lucide-react";
 import { evaluateProof } from "@/lib/proof-evaluator";
+import { useGemini } from "@/hooks/use-gemini";
+import { HintDisplay } from "@/components/HintDisplay";
 import type { Duel, Proof } from "@/types/database";
 
 const DuelDetail = () => {
@@ -22,13 +24,21 @@ const DuelDetail = () => {
   const [submitted, setSubmitted] = useState(false);
   const [solution, setSolution] = useState("");
   const [timerRunning, setTimerRunning] = useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [currentHint, setCurrentHint] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState({
+    is_correct: false,
+    on_right_track: false,
+    progress: 0,
+    feedback: ""
+  });
+  const { getHint, evaluateProof: geminiEvaluate, isLoading: geminiLoading } = useGemini();
   
   useEffect(() => {
     setTimerRunning(true);
     return () => setTimerRunning(false);
   }, []);
   
-  // Fetch the duel details
   const { data: duel, isLoading: isLoadingDuel } = useQuery({
     queryKey: ["duel", id],
     queryFn: async () => {
@@ -76,7 +86,14 @@ const DuelDetail = () => {
     mutationFn: async ({ content, duelId, userName }: { content: string; duelId: string; userName: string }) => {
       if (!proof) throw new Error("Proof not found");
       
-      const progress = await evaluateProof(content, proof.content);
+      const evaluationResult = await geminiEvaluate(
+        content,
+        proof.content,
+        proof.mathematician_proof,
+        proof.source_text
+      );
+      
+      const progress = evaluationResult.progress;
       const isCreator = duel?.creator_name === userName;
       
       const { data: submission, error: submissionError } = await supabase
@@ -87,7 +104,8 @@ const DuelDetail = () => {
             proof_id: proof.id,
             duel_id: duelId,
             content: content,
-            progress: progress
+            progress: progress,
+            feedback: evaluationResult.feedback
           }
         ])
         .select();
@@ -125,9 +143,7 @@ const DuelDetail = () => {
               updateData.winner = duel.creator_name;
               updateData.status = "completed";
               updateData.completed_at = new Date().toISOString();
-            } 
-            
-            else {
+            } else {
               updateData.winner = "Tie";
               updateData.status = "completed";
               updateData.completed_at = new Date().toISOString();
@@ -147,7 +163,10 @@ const DuelDetail = () => {
       return { 
         submission: submission[0], 
         duel: updatedDuel[0] as Duel,
-        progress
+        progress,
+        feedback: evaluationResult.feedback,
+        isCorrect: evaluationResult.is_correct,
+        onRightTrack: evaluationResult.on_right_track
       };
     },
     onSuccess: (data) => {
@@ -156,6 +175,12 @@ const DuelDetail = () => {
         description: `You've completed approximately ${data.progress}% of the proof.`,
       });
       setSubmitted(true);
+      setFeedback({
+        is_correct: data.isCorrect,
+        on_right_track: data.onRightTrack,
+        progress: data.progress,
+        feedback: data.feedback
+      });
       
       queryClient.invalidateQueries({ queryKey: ["duel", id] });
       
@@ -182,6 +207,37 @@ const DuelDetail = () => {
       });
     }
   });
+  
+  const handleGetHint = async () => {
+    if (!proof) {
+      toast({
+        title: "Error",
+        description: "No proof loaded to get a hint for.",
+        variant: "destructive",
+      });
+      return "";
+    }
+    
+    const maxDuelHints = 3;
+    if (hintsUsed >= maxDuelHints) {
+      toast({
+        title: "Maximum hints reached",
+        description: `You've used all ${maxDuelHints} available hints for this duel.`,
+        variant: "destructive",
+      });
+      return "";
+    }
+    
+    setHintsUsed(prev => prev + 1);
+    const hintText = await getHint(
+      proof.content,
+      solution,
+      proof.mathematician_proof,
+      proof.source_text
+    );
+    setCurrentHint(hintText);
+    return hintText;
+  };
   
   const handleSubmit = (content: string) => {
     setTimerRunning(false);
@@ -500,6 +556,10 @@ const DuelDetail = () => {
           <MathEditor
             initialPrompt={proof.description}
             onSubmit={handleSubmit}
+            onGetHint={handleGetHint}
+            hintsUsed={hintsUsed}
+            maxHints={3}
+            isLoading={submitMutation.isPending || geminiLoading}
           />
         )
       )}

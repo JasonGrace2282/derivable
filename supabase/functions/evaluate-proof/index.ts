@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -15,11 +14,10 @@ serve(async (req) => {
   }
 
   try {
-    const { userSolution, referenceSolution, mathematicianProof, source, action, apiKey } = await req.json()
-    // Use the provided API key if available, otherwise use the environment variable
+    const { userSolution, referenceSolution, mathematicianProof, source, action, apiKey, model } = await req.json()
     const effectiveApiKey = apiKey || GEMINI_API_KEY;
+    const modelName = model || "gemini-1.5-flash-latest";
     
-    // If no API key is available, return an error
     if (!effectiveApiKey) {
       return new Response(
         JSON.stringify({ error: "No API key provided" }),
@@ -54,6 +52,13 @@ serve(async (req) => {
           "progress": number,
           "feedback": "string with feedback"
         }
+        
+        Be thorough in your evaluation. Consider:
+        - Mathematical correctness
+        - Logical flow
+        - Completeness of steps
+        - Clarity of explanation
+        - Adherence to mathematical conventions
       `;
     } else if (action === "hint") {
       prompt = `
@@ -71,10 +76,12 @@ serve(async (req) => {
         The hint should help them take the next step in their reasoning.
         Be concise (maximum 2-3 sentences) but mathematically precise.
         Focus on the next logical step they should take.
+        
+        Format your response as a simple text string without any JSON formatting.
       `;
     }
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -99,23 +106,53 @@ serve(async (req) => {
     
     let responseText = "";
     try {
-      responseText = data.candidates[0].content.parts[0].text;
+      responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
       
       if (action === "evaluate") {
-        const jsonMatch = responseText.match(/```json\s*(\{[\s\S]*?\})\s*```/) || 
-                        responseText.match(/\{[\s\S]*"feedback"[\s\S]*\}/);
-        
-        if (jsonMatch) {
-          const jsonStr = jsonMatch[1] || jsonMatch[0];
-          const result = JSON.parse(jsonStr);
-          return new Response(JSON.stringify(result), {
+        // Try to parse the response as JSON
+        try {
+          const jsonMatch = responseText.match(/```json\s*(\{[\s\S]*?\})\s*```/) || 
+                          responseText.match(/\{[\s\S]*"feedback"[\s\S]*\}/);
+          
+          if (jsonMatch) {
+            const jsonStr = jsonMatch[1] || jsonMatch[0];
+            const result = JSON.parse(jsonStr);
+            
+            // Validate the result structure
+            if (typeof result.is_correct === 'boolean' &&
+                typeof result.on_right_track === 'boolean' &&
+                typeof result.progress === 'number' &&
+                typeof result.feedback === 'string') {
+              return new Response(JSON.stringify(result), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              });
+            }
+          }
+          
+          // If we couldn't parse JSON or validate structure, return a formatted response
+          return new Response(JSON.stringify({
+            is_correct: false,
+            on_right_track: true,
+            progress: 50,
+            feedback: "Could not parse AI evaluation. Please try submitting again."
+          }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
+        } catch (parseError) {
+          console.error("Error parsing evaluation response:", parseError);
+          throw new Error("Failed to parse evaluation response");
         }
       }
     } catch (error) {
-      console.error("Error parsing Gemini response:", error);
+      console.error("Error processing Gemini response:", error);
       console.log("Original response:", data);
+    }
+
+    // Always return a response field for hints
+    if (action === "hint") {
+      return new Response(JSON.stringify({ response: responseText }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     return new Response(JSON.stringify({ response: responseText }), {

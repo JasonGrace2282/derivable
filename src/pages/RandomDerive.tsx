@@ -12,16 +12,22 @@ import { YearRangeSlider } from "@/components/YearRangeSlider";
 import { evaluateProof } from "@/lib/proof-evaluator";
 import { Stopwatch } from "@/components/Stopwatch";
 import type { Proof } from "@/types/database";
+import { useGemini } from "@/hooks/use-gemini";
 
 const RandomDerive = () => {
+  const { toast } = useToast();
   const [username, setUsername] = useState(() => localStorage.getItem("username") || "");
+  const [minYear, setMinYear] = useState<number | null>(null);
+  const [maxYear, setMaxYear] = useState<number | null>(null);
+  const [subject, setSubject] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [solution, setSolution] = useState("");
-  const [minYear, setMinYear] = useState(-600);
-  const [maxYear, setMaxYear] = useState(2023);
   const [timerRunning, setTimerRunning] = useState(false);
-  const { toast } = useToast();
-  
+  const [currentProofId, setCurrentProofId] = useState<string | null>(null);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [currentHint, setCurrentHint] = useState<string | null>(null);
+  const { getHint, isLoading: geminiLoading, setGeminiApiKey } = useGemini();
+
   const { data: proofs, isLoading: isLoadingProofs } = useQuery({
     queryKey: ["proofs"],
     queryFn: async () => {
@@ -56,7 +62,13 @@ const RandomDerive = () => {
     return filteredProofs[randomIndex].id;
   };
 
-  const [currentProofId, setCurrentProofId] = useState<string | null>(null);
+  useEffect(() => {
+    if (proofs && proofs.length > 0) {
+      const { min, max } = calculateYearBounds();
+      setMinYear(min);
+      setMaxYear(max);
+    }
+  }, [proofs]);
 
   const calculateYearBounds = () => {
     if (!proofs || proofs.length === 0) return { min: -600, max: 2023 };
@@ -73,14 +85,6 @@ const RandomDerive = () => {
     
     return { min, max };
   };
-
-  useEffect(() => {
-    if (proofs && proofs.length > 0) {
-      const { min, max } = calculateYearBounds();
-      setMinYear(min);
-      setMaxYear(max);
-    }
-  }, [proofs]);
 
   const { data: currentProof, isLoading: isLoadingCurrentProof, refetch: refetchCurrentProof } = useQuery({
     queryKey: ["proof", currentProofId],
@@ -199,6 +203,35 @@ const RandomDerive = () => {
       proofId: currentProofId,
       userName: username
     });
+  };
+
+  const handleGetHint = async (currentSolutionFromEditor: string) => {
+    if (!currentProof) {
+      toast({
+        title: "Error",
+        description: "No proof loaded to get a hint for.",
+        variant: "destructive",
+      });
+      return "";
+    }
+    if (hintsUsed >= 5) { // Assuming max 5 hints, adjust as needed
+      toast({
+        title: "Maximum hints reached",
+        description: "You've used all available hints for this proof.",
+        variant: "destructive",
+      });
+      return "";
+    }
+    
+    setHintsUsed(prev => prev + 1);
+    const hintText = await getHint(
+      currentProof.content, // referenceSolution
+      currentSolutionFromEditor, // Use solution from editor
+      currentProof.mathematician_proof,
+      currentProof.source_text
+    );
+    setCurrentHint(hintText);
+    return hintText;
   };
 
   const handleYearRangeChange = (min: number, max: number) => {
@@ -336,6 +369,10 @@ const RandomDerive = () => {
               <MathEditor
                 initialPrompt={currentProof.description}
                 onSubmit={handleSubmit}
+                onGetHint={handleGetHint}
+                hintsUsed={hintsUsed}
+                maxHints={5} // Assuming max 5 hints
+                isLoading={submitMutation.isPending || geminiLoading}
               />
             </div>
           )}
