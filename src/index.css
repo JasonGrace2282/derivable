@@ -1,0 +1,186 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 225 25% 7%;
+    --foreground: 210 40% 98%;
+
+    --card: 228 22% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 228 22% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 227 20% 20%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 227 20% 20%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 227 20% 25%;
+    --input: 227 20% 25%;
+    --ring: 217 91% 60%;
+
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  .math-card {
+    @apply bg-card rounded-2xl p-4 sm:p-6 border border-border transition-all hover:shadow-md hover:shadow-primary/20;
+  }
+
+  .btn-round {
+    @apply rounded-full;
+  }
+  
+  /* Improved mobile responsive styles */
+  h1, h2, h3, h4, h5, h6 {
+    @apply break-words;
+  }
+  
+  .katex-display {
+    @apply overflow-x-auto overflow-y-hidden py-2;
+  }
+  
+  /* Make sure LaTeX math formulas are responsive */
+  .katex-display > .katex {
+    @apply max-w-full;
+  }
+  
+  /* Fix for mixed content with math */
+  .math-content {
+    @apply break-words overflow-x-auto max-w-full;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    line-height: 1.7;
+  }
+  
+  /* Better math symbols display on mobile */
+  .katex {
+    font-size: 1.1em;
+  }
+  
+  /* Style for math expressions inside normal text */
+  .math-content .katex {
+    margin: 0 0.1em;
+  }
+  
+  /* Improved spacing for mobile */
+  @media (max-width: 640px) {
+    .math-card {
+      @apply p-4;
+    }
+    
+    .space-y-6 > * + * {
+      @apply mt-4;
+    }
+    
+    .math-content {
+      font-size: 0.95em;
+    }
+  }
+  
+  /* Animation for page transitions */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Improved UI Styles */
+  .glass-card {
+    @apply bg-secondary/30 backdrop-blur-sm border border-white/10 shadow-lg;
+  }
+  
+  /* Enhanced button styles */
+  .btn-fancy {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+  
+  .btn-fancy::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 -translate-x-full;
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  /* Progress bar animation */
+  .animate-progress {
+    animation: progressGrow 0.5s ease-out;
+  }
+  
+  @keyframes progressGrow {
+    from { width: 0; }
+    to { width: var(--progress-width); }
+  }
+  
+  /* Hover effects */
+  .hover-lift {
+    @apply transition-transform duration-300;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+  
+  /* Math syntax highlighting */
+  .math-highlight {
+    @apply bg-primary/10 px-1 py-0.5 rounded text-primary;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-secondary/30 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/50 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/70;
+  }
+  
+  /* Tooltip custom styles */
+  .custom-tooltip {
+    @apply bg-popover text-popover-foreground px-3 py-1.5 rounded-lg shadow-lg border border-border text-xs;
+  }
+}

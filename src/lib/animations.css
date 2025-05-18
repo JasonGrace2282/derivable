@@ -1,0 +1,126 @@
+
+/* Animation utilities for a more interactive UI */
+.fade-in {
+  animation: fadeIn 0.5s ease-in forwards;
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+.bounce {
+  animation: bounce 0.5s ease-in-out;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Keyframes for animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Card and button hover effects */
+.math-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.math-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.btn-round {
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.btn-round:hover {
+  transform: translateY(-1px);
+}
+
+/* Page transition animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+/* Card and element animations */
+.card-hover-effect {
+  transition: all 0.3s ease;
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Proof difficulty badges styling */
+.badge-easy {
+  @apply bg-green-500/20 text-green-500;
+  animation: pulseGreen 2s infinite;
+}
+
+.badge-medium {
+  @apply bg-yellow-500/20 text-yellow-500;
+  animation: pulseYellow 2s infinite;
+}
+
+.badge-hard {
+  @apply bg-red-500/20 text-red-500;
+  animation: pulseRed 2s infinite;
+}
+
+@keyframes pulseGreen {
+  0% { background-color: rgba(34, 197, 94, 0.1); }
+  50% { background-color: rgba(34, 197, 94, 0.2); }
+  100% { background-color: rgba(34, 197, 94, 0.1); }
+}
+
+@keyframes pulseYellow {
+  0% { background-color: rgba(234, 179, 8, 0.1); }
+  50% { background-color: rgba(234, 179, 8, 0.2); }
+  100% { background-color: rgba(234, 179, 8, 0.1); }
+}
+
+@keyframes pulseRed {
+  0% { background-color: rgba(239, 68, 68, 0.1); }
+  50% { background-color: rgba(239, 68, 68, 0.2); }
+  100% { background-color: rgba(239, 68, 68, 0.1); }
+}
+
+/* Input and interactive element focus states */
+input:focus, button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
