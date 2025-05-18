@@ -192,7 +192,7 @@ export function MathEditor({
                 <MathDisplay math={solution} block={true} />
               ) : (
                 <p className="text-muted-foreground">
-                  Your LaTeX preview will appear here.
+                  Enter LaTeX above and switch to Preview to see the rendered math.
                 </p>
               )}
             </div>

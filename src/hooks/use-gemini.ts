@@ -16,12 +16,10 @@ export function useGemini() {
   const [apiKeyChecked, setApiKeyChecked] = useState(false);
 
   useEffect(() => {
-    // First try to get from localStorage
     const storedKey = localStorage.getItem("GEMINI_API_KEY");
     if (storedKey) {
       setApiKey(storedKey);
     } else {
-      // If not in localStorage, try to get from environment
       const envKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
       if (envKey) {
         setApiKey(envKey);
@@ -59,22 +57,17 @@ export function useGemini() {
 
       if (error) throw new Error(error.message);
 
-      // If Gemini returns a valid evaluation, use it
       if (data && typeof data.is_correct === 'boolean') {
         return data as EvaluationResult;
       }
-      // If Gemini returns a response field, try to parse it
       if (data && data.response) {
         try {
           const parsed = JSON.parse(data.response);
           if (typeof parsed.is_correct === 'boolean') {
             return parsed as EvaluationResult;
           }
-        } catch (e) {
-          // Ignore parse error, fallback below
-        }
+        } catch (e) {}
       }
-      // Fallback to local
       throw new Error("Gemini did not return a valid evaluation");
     } 
     catch (err) {
@@ -144,7 +137,6 @@ export function useGemini() {
       const errorMessage = err instanceof Error ? err.message : "Failed to get hint";
       setError(errorMessage);
       console.error("Error getting hint:", err);
-      // Return a random fallback hint
       const randomIndex = Math.floor(Math.random() * fallbackHints.length);
       return fallbackHints[randomIndex];
     } finally {

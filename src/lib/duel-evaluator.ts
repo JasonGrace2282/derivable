@@ -9,9 +9,7 @@ export async function evaluateDuelSubmission(
   apiKey?: string | null
 ) {
   try {
-    // Always use the environment API key if available
-    const envApiKey = "AIzaSyDe_XhNzMw-iy23SuCWCpJ46I8zUXZEbZY";
-    const effectiveApiKey = apiKey || envApiKey;
+    const effectiveApiKey = apiKey;
     
     if (effectiveApiKey) {
       const { data, error } = await supabase.functions.invoke("evaluate-proof", {
