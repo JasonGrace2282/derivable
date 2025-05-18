@@ -2,12 +2,12 @@
 
 <div align="center">
   <img src="./public/logo.jpg" alt="Derive Duel Arena Logo" width="200" />
-  <h3>Tackle mathematical proofs, challenge friends, and explore mathematical reasoning</h3>
+  <h3>Go back in time to tackle mathematical proofs, challenge friends, and explore mathematical reasoning</h3>
 </div>
 
 ## About
 
-Derive Duel Arena is an interactive platform for mathematics enthusiasts to engage with mathematical proofs and derivations. The application offers multiple ways to explore and practice mathematical reasoning:
+Derivable is an interactive platform for mathematics enthusiasts to engage with mathematical proofs and derivations. The application offers multiple ways to explore and practice mathematical reasoning:
 
 - **Daily Challenges**: Tackle a new mathematical proof each day
 - **Math Duels**: Challenge friends to head-to-head competitions
