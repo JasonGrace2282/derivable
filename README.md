@@ -1,4 +1,4 @@
-# Derive Duel Arena
+# Derivable
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/JasonGrace2282/derivable/refs/heads/main/public/logo.jpg" alt="logo" width="200" />
