@@ -1,7 +1,7 @@
 # Derive Duel Arena
 
 <div align="center">
-  <img src="./public/logo.jpg" alt="Derive Duel Arena Logo" width="200" />
+  <img src="https://raw.githubusercontent.com/JasonGrace2282/derivable/refs/heads/main/public/logo.jpg" alt="logo" width="200" />
   <h3>Go back in time to tackle mathematical proofs, challenge friends, and explore mathematical reasoning</h3>
 </div>
 
